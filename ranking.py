@@ -28,7 +28,7 @@ def calcular_minutos_escuchas(songs):
     min_escuchas = ms_total/(6*10**4)
     return min_escuchas
 
-def escuchas_por_mes(songs, cancion, artista):
+def calcular_escuchas_por_mes(songs, cancion, artista):
     """ Calcula las escuchas por mes de una cación y artista concreto para una tabla de datos dada"""
     songs = songs.copy()
     songs = songs[(songs["cancion"]==cancion) & (songs["artista"]==artista)]
@@ -46,7 +46,7 @@ def calcular_sstats(songs: pd.DataFrame):
     ).reset_index())
     return sstats
 
-def ranking_reproducidas(songs, min_played = 30000):
+def calcular_ranking_reproducidas(songs, min_played = 30000):
     """Ranking de canciones ordenadas por reproducciones pero teniendo en cuenta las reproducciones a partir de un minimo de milisegundos de escucha (min_played)"""
     reproducidas = songs[songs["ms_played"]> min_played]
     ranking = reproducidas.groupby(["cancion", "artista"]).size().reset_index(name = "rep").sort_values(by = "rep", ascending = False)
@@ -54,31 +54,31 @@ def ranking_reproducidas(songs, min_played = 30000):
 
     return ranking
 
-def ranking_trackdone(songs, min_played = 30000):
+def calcular_ranking_trackdone(songs, min_played = 30000):
     """Ranking de canciones pero las repeticiones solo cuentan si he escuchado la canción hasta el final"""
     ranking_trackdone = songs[(songs["reason_end"]== "trackdone") & (songs["ms_played"]>min_played)]
-    ranking_trackdone = ranking_trackdone.groupby(["cancion", "artista"]).size().reset_index(name="rep").sort_values(by="rep", ascending=False)
+    ranking_trackdone = ranking_trackdone.groupby(["cancion", "artista"]).size().reset_index(name="rep_trackdone").sort_values(by="rep_trackdone", ascending=False)
     ranking_trackdone.insert(0, "Puesto", range(1, len(ranking_trackdone) + 1))
 
     return ranking_trackdone
 
-def ranking_clickrow(songs, min_played = 30000):
+def calcular_ranking_clickrow(songs, min_played = 30000):
     """Ranking de canciones que le he dado yo a reproducir activamente, es decir; no me las ha puesto Spotify, las he buscado yo y las he puesto yo"""
     ranking_clickrow = songs[songs["reason_start"] == "clickrow"]
-    ranking_clickrow = ranking_clickrow.groupby(["cancion","artista"]).size().reset_index(name = "rep").sort_values(by="rep", ascending = False)
+    ranking_clickrow = ranking_clickrow.groupby(["cancion","artista"]).size().reset_index(name = "rep_clickrow").sort_values(by="rep_clickrow", ascending = False)
     ranking_clickrow.insert(0, "Puesto", range(1, len(ranking_clickrow) + 1))
 
     return ranking_clickrow
 
-def ranking_loop(songs):
+def calcular_ranking_loop(songs):
     """Ranking de repeticiones pero solo cuenta las canciones que has puesto en bucle"""
     ranking_loop = songs[(songs["cancion"]==songs["cancion"].shift(1)) & (songs["artista"]==songs["artista"].shift(1))]
-    ranking_loop = ranking_loop.groupby(["cancion","artista"]).size().reset_index(name = "rep").sort_values(by="rep", ascending = False)
+    ranking_loop = ranking_loop.groupby(["cancion","artista"]).size().reset_index(name = "rep_loop").sort_values(by="rep_loop", ascending = False)
     ranking_loop.insert(0, "Puesto", range(1, len(ranking_loop) + 1))
 
     return ranking_loop
 
-def ranking_densidad(sstats, min_rep = 50):
+def calcular_ranking_densidad(sstats, min_rep = 50):
 
     """Calcula para una tabla dada de canciones, las media de las escuchas desde la primera escucha hasta la última para cada canción, además añade un minimo de reproducciones para no favorecer a las canciones que se han escuchado un solo día"""    
     sstats = sstats.copy()
@@ -94,7 +94,7 @@ def ranking_densidad(sstats, min_rep = 50):
 
     return ranking_densidad
 
-def ranking_intervalo(sstats, songs, intervalo_mes=3):
+def calcular_ranking_intervalo(sstats, songs, intervalo_mes=3):
     """Función que para un intervalo de tiempo fijo calcula desde la primera reproducción las escuchas en ese intervalo de tiempo. No tiene en cuenta canciones que no tienen todo el intervalo de tiempo, por lo tanto si la canción la has conocido hace menos que tu intervalo de tiempo, no va a salir"""
 
     ranking_intervalo = songs.merge(
@@ -117,3 +117,75 @@ def ranking_intervalo(sstats, songs, intervalo_mes=3):
     ranking_intervalo.insert(0, "Puesto", range(1, len(ranking_intervalo) + 1))
 
     return ranking_intervalo
+
+#valor por defecto que usamos al final del código
+PESOS_RANKINGS_DEFAULT = {
+        "rep_ventana":1,
+        "pct_trackdone": 1,
+        "pct_clickrow":1,
+        "pct_loop":1
+    }
+
+def calcular_ranking_percentile(sstats, min_rep, intervalo_mes,songs, ranking_trackdone, ranking_clickrow, ranking_loop, pesos_rankings = PESOS_RANKINGS_DEFAULT):
+
+
+    
+    # Definimos la matriz base a la que le vamos a añadir todos los percentiles
+    fecha_fin = sstats["fecha_max"].max()
+    base = sstats[(sstats['rep'] >= min_rep) & (sstats['fecha_inicio'] + pd.DateOffset(months=intervalo_mes) <= fecha_fin)]
+    base = base[['cancion', 'artista', 'rep']]
+
+    # Calculamos el ind del trackdone
+    ind_trackdone = ranking_trackdone.merge(
+        sstats,
+        on = ['cancion', 'artista']
+        )
+    ind_trackdone['pct_trackdone'] = (ind_trackdone['rep_trackdone'] / ind_trackdone['rep'])
+    ind_trackdone = ind_trackdone[['cancion', 'artista', 'pct_trackdone']] 
+    # lo unimos a la base
+    base = base.merge(ind_trackdone,
+        on = ['cancion', 'artista'],
+        how = 'left'
+        )
+    
+    # Calculamos el indicador de clickrow
+    ind_clickrow = ranking_clickrow.merge(
+        sstats,
+        on = ['cancion', 'artista'] 
+        )
+    ind_clickrow['pct_clickrow'] = (ind_clickrow['rep_clickrow'] / ind_clickrow['rep'])
+    ind_clickrow = ind_clickrow[['cancion', 'artista', 'pct_clickrow']]
+    # Lo unimos a la base
+    base = base.merge(ind_clickrow,
+                  on = ['cancion', 'artista'],
+                  how = 'left')
+
+    # Calculamos el indicador de loop
+    ind_loop = ranking_loop.merge(
+        sstats,
+        on = ['cancion', 'artista'] 
+        )
+    ind_loop['pct_loop'] = (ind_loop['rep_loop'] / ind_loop['rep'])
+    ind_loop = ind_loop[['cancion', 'artista', 'pct_loop']]
+    # Lo unimos a la base
+    base = base.merge(ind_loop,
+                  on = ['cancion', 'artista'],
+                  how = 'left')
+
+    # Calculamos el indicador del intervalo
+    ranking_intervalo = calcular_ranking_intervalo(sstats,songs,intervalo_mes)
+    ind_intensidad = ranking_intervalo[['cancion', 'artista', 'rep_ventana']]
+    base = base.merge(ind_intensidad, on=['cancion', 'artista'], how='left')
+    base = base.fillna(0)
+
+    # Creamos la tabla con los percentiles de cada indicador
+    indicadores = ['rep_ventana', 'pct_trackdone', 'pct_clickrow', 'pct_loop']
+    
+    base['nota'] = 0
+    suma_pesos = sum(pesos_rankings.values())
+    for col in indicadores:
+        base['p_' + col] = base[col].rank(pct=True) # Creamos la columna de los percentiles para cada indicador
+        base['nota'] += base['p_' + col ]*pesos_rankings[col]* 10/suma_pesos  # nota sobre 10, base += numero es igual que hacer base = numero + base
+    ranking_final = base.sort_values(by='nota', ascending=False)
+    return ranking_final
+    
