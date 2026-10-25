@@ -44,7 +44,6 @@ def calcular_sstats(songs: pd.DataFrame):
         fecha_inicio = ('ts', 'min'),
         fecha_max = ('ts', 'max')
     ).reset_index())
-    sstats = sstats[sstats["ms_played"]> 30000]
     return sstats
 
 def ranking_reproducidas(songs, min_played = 30000):
