@@ -13,16 +13,18 @@ def preparar_todo(contenidos):
 
 st.set_page_config(page_title="Mi ranking de Spotify", page_icon="🎧", layout="wide")
 st.title("Mi ranking de Spotify")
-st.markdown("""Esta aplicación sirve para analizar tus gustos musicales según la información recopilada por Spotify.
-Spotify guarda todos tus datos y puedes pedírselos en dos sencillos pasos: 
+st.markdown("""Esta aplicación sirve para analizar tus gustos musicales según la información recopilada por Spotify""")
 
-1. En el icono de tu perfil, pulsa **cuenta**. Esto te redirigirá a una página con todos los datos de tu cuenta de Spotify 
-2. En el apartado de **Seguridad y Privacidad** selecciona **Privacidad de la cuenta* 
-3. Desliza hasta el final y marca **Historial de reproducción ampliado** y pulsa **solicitar datos**
+with st.expander("¿Cómo pedir tus datos?"):
+    st.markdown("""Spotify guarda todos tus datos y puedes pedírselos en tres sencillos pasos: 
 
-En unos días te llegarán al correo una carpeta comprimida con unos archivos en formato .json con todo tu historial, para poder ver tu análisis, simplemente cárgalos aquí""")
+    1. En el icono de tu perfil, pulsa **cuenta**. Esto te redirigirá a una página con todos los datos de tu cuenta de Spotify 
+    2. En el apartado de **Seguridad y Privacidad** selecciona **Privacidad de la cuenta** 
+    3. Desliza hasta el final y marca **Historial de reproducción ampliado** y pulsa **solicitar datos**
 
-with st.expander("Sube tus JSONs de Spotify"):
+    En unos días te llegarán al correo una carpeta comprimida con unos archivos en formato .json con todo tu historial, para poder ver tu análisis, simplemente cárgalos aquí""")
+
+with st.expander("Sube tus datos de Spotify"):
     subidos = st.file_uploader(label="Sube tus JSONs de Spotify", type="json", accept_multiple_files=True, label_visibility="hidden")
 if not subidos:
     st.info("Sube tus archivos para empezar")
@@ -60,13 +62,15 @@ col4.metric("Fin",str(sstats["fecha_max"].max().date()),border=True) #convertimo
 with st.expander("Ver todos mis datos"):
     st.dataframe(sstats, hide_index=True, column_config=traductor)
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(["Spotify", "Trackdone", "Clickrow","Loop", "Densidad", "Intervalo", "Ranking definitivo", "Mi historia con una canción" ])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(["Spotify", "Enteras", "Seleccionadas","En bucle", "Al día", "En un tiempo", "Definitivo", "Mi historia con una canción" ])
 
 
 with tab1:
     st.subheader("Ranking de Spotify")
     with st.expander("Explicación"):
-        st.markdown("Este ranking pretende simular el creado por Spotify por su veinte aniversario para la playlist *Tu top de canciones más escuchadas*. Tras muchas pruebas se detectectó que este se había creado contando las repeticiones de las canciones con más de 30 segundos de reproducción.¡Comprueba tu mismo que se corresponde con este ranking revisando tu playlist de Spotify! Hay que tener en cuenta que el ranking se hizo con los datos recopilados hasta mayo de 2026 y el tuyo depende de cuando pediste el histórico")
+        st.markdown("""Este ranking simula el ranking creado por Spotify por su veinte aniversario para la playlist *Tu top de canciones más escuchadas*. Tras muchas pruebas se consiguió replicar este ranking contando las repeticiones de las canciones con más de 30 segundos de reproducción.¡Compruebalo tú mismo en tu playlist de Spotify! 
+        
+        Ojo: Hay que tener en cuenta que el ranking de Spotify se hizo con los datos recopilados hasta mayo de 2026 y el tuyo depende de cuando pediste el histórico, por lo que pueden no coincidir""")
     top10 = ranking.calcular_ranking_reproducidas(songs).head(10)
     grafico = (
             alt.Chart(top10)
@@ -81,9 +85,9 @@ with tab1:
     st.dataframe(ranking.calcular_ranking_reproducidas(songs), hide_index=True, column_config=traductor)
    
 with tab2:
-    st.subheader("Ranking Reproducciones de canciones hasta el final")
+    st.subheader("Ranking canciones terminadas")
     with st.expander("Explicación"):
-        st.text("Este es un ranking de reproducciones, al igual que el de Spotify, sin embargo, aquí solo cuenta como reproducción si has escuchado la canción entera.")
+        st.markdown("Este es un ranking de reproducciones, al igual que el de Spotify. Sin embargo, aquí solo cuenta como reproducción si has escuchado la canción hasta el final, sin saltártela. Así le damos verdadera importancia a las canciones que te gustan en su completitud, no solo el estribillo de TikTok.")
     
     top10 = ranking.calcular_ranking_trackdone(songs).head(10)
     grafico = (
@@ -99,9 +103,11 @@ with tab2:
     st.dataframe(ranking.calcular_ranking_trackdone(songs), hide_index=True, column_config=traductor)
 
 with tab3:
-    st.subheader("Ranking de repeticiones de las canciones clicadas conscientemente")
+    st.subheader("Ranking de canciones elegidas")
     with st.expander("Explicación"):
-        st.markdown("Este es un ranking de reproducciones, al igual que los otros pero aquí solo cuentan las reproducciones de las canciones que hemos seleccionado nosotros mismos. Es decir, solo cuenta si la hemos buscado y clicado. Si no tienes Spotify premium, creo que este ranking no tiene mucho sentido, lo siento")
+        st.markdown("""Este es un ranking de reproducciones, al igual que los otros pero aquí solo cuentan las reproducciones de las canciones que has seleccionado tú. Es decir, solo cuenta si la hemos buscado y clicado. Con este ranking valoramos esas canciones que te vienen a la mente escuchar, no las que están en tu playlist favorita ni la que te ha puesto DJ Livi.
+        
+        Ojo: En la versión gratuita de Spotify las opciones para elegir canciones concretas son limitadas, sobre todo en el móvil, así que tal vez tengas pocos datos aquí""")
     top10 = ranking.calcular_ranking_clickrow(songs).head(10)
     grafico = (
                 alt.Chart(top10)
@@ -116,9 +122,9 @@ with tab3:
     st.dataframe(ranking.calcular_ranking_clickrow(songs), hide_index=True, column_config=traductor)
 
 with tab4:
-    st.subheader("Ranking canciones en Loop")
+    st.subheader("Ranking canciones en bucle")
     with st.expander("Explicación"):    
-        st.text("Este ranking, nuevamente cuenta las reproducciones, pero esta vez solo cuentan las que han estado en bucle. ¿A ver qué canción es la que más has tenido en bucle?")
+        st.markdown("Este ranking, nuevamente cuenta las reproducciones, pero esta vez solo cuentan las que han estado en bucle. Aquí contamos como reproducción solo si la anterior era la misma canción, da igual si has puesto literalmente el bucle o simplemente le has dado hacia atrás. Este ranking pretende valorar esas canciones que nos obsesionan y que con una escucha no es suficiente. ¿A ver qué canción es la que más has tenido en bucle?")
     top10 = ranking.calcular_ranking_loop(songs).head(10)
     grafico = (
                 alt.Chart(top10)
@@ -133,9 +139,9 @@ with tab4:
     st.dataframe(ranking.calcular_ranking_loop(songs), hide_index=True, column_config=traductor)
 
 with tab5:
-    st.subheader("Ranking densidad")
+    st.subheader("Ranking de más escuchas en un día")
     with st.expander("Explicación"):
-        st.text("Este ranking es el motivo de que se hiciera este proyecto. El ranking de Spotify beneficia a las canciones que conocemos desde hace más años proque tienen más probabilidad de haber sido escuchadas más veces. Sin embargo, este ranking mide cuantos las reproducciones totales de una canción y lo divide por el tiempo hemos estado escuchando esa canción; es decir, desde que la conocemos hasta que la hemos escuchado por última vez. Sin embargo, este ranking hace que las canciones que solo has escuchado unos pocos días, tengan mucha puntuación, sin implicar eso que sea tu canción favorita. Por eso, para que sea más justo hemos hecho que el número de reproducciones mínimas que tenga que tener una canción para que se la incluya en el ranking sea un valor variable. Prueba a moverlo para ver cómo cambia tu ranking")
+        st.markdown("Este ranking es el motivo de que se hiciera este proyecto. El ranking de Spotify beneficia a las canciones que conocemos desde hace más años proque tienen más probabilidad de haber sido escuchadas más veces. Sin embargo, este ranking mide cuantos las reproducciones totales de una canción y lo divide por el tiempo hemos estado escuchando esa canción; es decir, desde que la conocemos hasta que la hemos escuchado por última vez. Sin embargo, este ranking hace que las canciones que solo has escuchado unos pocos días, tengan mucha puntuación, sin implicar eso que sea tu canción favorita. Por eso, para que sea más justo hemos hecho que el número de reproducciones mínimas que tenga que tener una canción para que se la incluya en el ranking sea un valor variable. Prueba a moverlo para ver cómo cambia tu ranking")
     max_rep = sstats["rep"].max()
     min_rep_densidad = st.slider("Ajusta el mínimo de reproducciones que tiene que tener una canción para aparecer en el ranking",1, max_rep,50, key="min_rep_densidad")
     top10 = ranking.calcular_ranking_densidad(sstats, min_rep_densidad).head(10)
@@ -152,9 +158,9 @@ with tab5:
     st.dataframe(ranking.calcular_ranking_densidad(sstats, min_rep_densidad), hide_index=True, column_config=traductor)
 
 with tab6:
-    st.subheader("Ranking ventana")
+    st.subheader("Ranking intervalo fijo")
     with st.expander("Explicación"):
-        st.text("El anterior ranking mete una desigualdad y es que las canciones que hemos conocido hace poco tiempo, tienen ventaja frente a las que conocemos desde hace más, por ello creamos este ranking donde vamos a calcular para todas las canciones, desde el momento que las conocimos hasta un tiempo limitado (ventana), cuanto las hemos escuchado")
+        st.markdown("El anterior ranking mete una desigualdad y es que las canciones que hemos conocido hace poco tiempo, tienen ventaja frente a las que conocemos desde hace más, por ello creamos este ranking donde vamos a calcular para todas las canciones, desde el momento que las conocimos hasta un tiempo limitado (ventana), cuanto las hemos escuchado")
     intervalo_mes_ventana = st.slider("Ajustas el número de meses que quieres que cuente las reproducciones", 1, int((sstats["fecha_max"].max()-sstats["fecha_inicio"].min()).days/30), 12, key="intervalo_mes_ventana")
     top10 = ranking.calcular_ranking_intervalo(sstats,songs,intervalo_mes_ventana).head(10)
     grafico = (
@@ -172,15 +178,15 @@ with tab6:
 with tab7:
     st.subheader("Ranking Definitivo")
     with st.expander("Explicación"):
-        st.text("Este ranking fusiona todos los anteriores: Calcula los porcentajes de las reproducciones totales que han sido clicadas, en bucle o reproducidas hasta el final y las reproducciones que se han tenido en cada canción para una ventana temporal. De cada canción se tiene en cuenta el percentil de su ranking, pero como sabemos que cada persona es un mundo, este ranking te permite decidir a cuál de los rankings anteriores le das más peso, además de editar los dos parámetros que hemos visto en el resto de rankings:" \
+        st.markdown("Este ranking fusiona todos los anteriores: Calcula los porcentajes de las reproducciones totales que han sido clicadas, en bucle o reproducidas hasta el final y las reproducciones que se han tenido en cada canción para una ventana temporal. De cada canción se tiene en cuenta el percentil de su ranking, pero como sabemos que cada persona es un mundo, este ranking te permite decidir a cuál de los rankings anteriores le das más peso, además de editar los dos parámetros que hemos visto en el resto de rankings:" \
         "La ventana temporal que estamos observando de una canción para el ranking de intensidad y el número de reproducciones mínimas que tienen que tener las canciones para aparecer en el ranking ")
     min_rep_definitivo = st.slider(" Ajusta el mínimo de reproducciones para salir en el top",1, max_rep,50, key="min_rep_definitivo")
     intervalo_mes_definitivo = st.slider("Ajustas el número de meses que quieres que cuente las reproducciones", 1, int((sstats["fecha_max"].max()-sstats["fecha_inicio"].min()).days/30), 12, key="intervalo_mes_definitivo")
     st.markdown("**Cuánto pesa cada indicador**")
     c1, c2, c3, c4 = st.columns(4)
     pesos_rankings = {
-        "rep_ventana":   c1.slider("ventana (meses)", 1, 10, 1),
-        "pct_trackdone": c2.slider("Escuchas enteras", 1, 10, 1),
+        "rep_ventana":   c1.slider("Intervalo fijo", 1, 10, 1),
+        "pct_trackdone": c2.slider("Enteras", 1, 10, 1),
         "pct_clickrow":  c3.slider("Elegida por mí", 1, 10, 1),
         "pct_loop":      c4.slider("En bucle", 1, 10, 1),
     }
@@ -198,7 +204,7 @@ with tab7:
 with tab8:
     st.subheader("Trayectoria de una canción")
     with st.expander("Explicación"):
-        st.text("Este gráfico muestra la historia de una canción que busques, en una línea temporal frente a las reproducciones que ha tenido para cada intervalo")
+        st.markdown("Este gráfico muestra la historia de una canción que busques, en una línea temporal frente a las reproducciones que ha tenido para cada intervalo")
     opciones = sstats[sstats["rep"]>=20]
     opciones = opciones.sort_values(by="rep", ascending= False)
     opciones["etiqueta"] = opciones["cancion"] + " - " +opciones["artista"] 
