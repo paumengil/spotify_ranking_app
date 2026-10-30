@@ -141,9 +141,11 @@ with tab4:
 with tab5:
     st.subheader("Ranking de más escuchas en un día")
     with st.expander("Explicación"):
-        st.markdown("Este ranking es el motivo de que se hiciera este proyecto. El ranking de Spotify beneficia a las canciones que conocemos desde hace más años proque tienen más probabilidad de haber sido escuchadas más veces. Sin embargo, este ranking mide cuantos las reproducciones totales de una canción y lo divide por el tiempo hemos estado escuchando esa canción; es decir, desde que la conocemos hasta que la hemos escuchado por última vez. Sin embargo, este ranking hace que las canciones que solo has escuchado unos pocos días, tengan mucha puntuación, sin implicar eso que sea tu canción favorita. Por eso, para que sea más justo hemos hecho que el número de reproducciones mínimas que tenga que tener una canción para que se la incluya en el ranking sea un valor variable. Prueba a moverlo para ver cómo cambia tu ranking")
+        st.markdown("""Este ranking es el motivo de que se hiciera este proyecto. El ranking de Spotify beneficia a las canciones que conoces desde hace más años, porque han tenido más tiempo para acumular escuchas. Para compensarlo, este ranking divide las escuchas totales de cada canción entre los días que han pasado desde que la escuchaste por primera vez hasta la fecha más reciente de tu historial. Así, 100 escuchas en un año pesan más que 200 en diez años, y las canciones que siguen contigo salen mejor paradas que las que dejaste de escuchar.
+
+        El problema es que las canciones que acabas de descubrir llevan muy pocos días contigo, así que con pocas escuchas ya consiguen mucha puntuación, sin que eso signifique que sean tus favoritas. Por eso puedes elegir cuántas escuchas necesita una canción como mínimo para entrar en el ranking. Prueba a moverlo para ver cómo cambia tu ranking.""")
     max_rep = sstats["rep"].max()
-    min_rep_densidad = st.slider("Ajusta el mínimo de reproducciones que tiene que tener una canción para aparecer en el ranking",1, max_rep,50, key="min_rep_densidad")
+    min_rep_densidad = st.slider("Nº mínimo de reproducciones para entrar",1, max_rep,50, key="min_rep_densidad")
     top10 = ranking.calcular_ranking_densidad(sstats, min_rep_densidad).head(10)
     grafico = (
                 alt.Chart(top10)
