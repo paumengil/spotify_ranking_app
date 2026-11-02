@@ -214,11 +214,8 @@ def calcular_ranking_loop(songs):
         Columnas ``Puesto``, ``cancion``, ``artista`` y ``rep_loop``,
         ordenadas de más a menos repeticiones.
 
-    Notes
-    -----
-    Supone que ``songs`` está ordenado cronológicamente por ``ts``; la
-    función no lo ordena.
 """
+    songs = songs.sort_values(by="ts")
     ranking_loop = songs[(songs["cancion"]==songs["cancion"].shift(1)) & (songs["artista"]==songs["artista"].shift(1))]
     ranking_loop = ranking_loop.groupby(["cancion","artista"]).size().reset_index(name = "rep_loop").sort_values(by="rep_loop", ascending = False)
     ranking_loop.insert(0, "Puesto", range(1, len(ranking_loop) + 1))

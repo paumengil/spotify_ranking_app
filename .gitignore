@@ -1,0 +1,12 @@
+# Entorno virtual
+venv/
+
+# Caché de Python
+__pycache__/
+*.pyc
+
+# Configuración del editor
+.vscode/
+
+# Datos personales de Spotify
+Spotify Extended Streaming History
