@@ -51,6 +51,7 @@ def preparar_canciones(df: pd.DataFrame): #Los dos puntos del paréntersis sirve
     }
     )
     songs =  songs[songs["ms_played"]> 30000]
+    songs = songs[["ts","ms_played","cancion", "artista", "reason_start", "reason_end"]]
     return songs
 
 def calcular_minutos_escuchas(songs):

@@ -1,0 +1,13 @@
+# Este archivo y con esta ruta es específico para que lo lea stremlit. No se le puede cambiar ni el nombre ni la ubicación
+
+# Sección Temática
+[theme] 
+base = "light"
+primaryColor = "#1ED760"  #los emoticonos se ponen solo al escribir el color
+#backgroundColor = "#121212"
+secondaryBackgroundColor = "#c1c1c1"
+#textColor = "#121212"
+greenColor = "#1ED760"
+chartCategoricalColors = ["#1ED760"]
+metricValueFontWeight = 700
+metricValueFontSize = "2.5rem"

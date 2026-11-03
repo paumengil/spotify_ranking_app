@@ -2,7 +2,7 @@ import streamlit as st
 import ranking
 import altair as alt
 
-@st.cache_data #Usamos este decorador que solo afecta a la función que tiene debajo para que a pesar de movamos el slider no haya que cargar los mismos datos luego
+@st.cache_data(ttl=7200, max_entries=5) #Usamos este decorador que solo afecta a la función que tiene debajo para que a pesar de movamos el slider no haya que cargar los mismos datos luego
 def preparar_todo(contenidos): 
     df = ranking.cargar_datos(contenidos)
     songs = ranking.preparar_canciones(df)
@@ -12,11 +12,11 @@ def preparar_todo(contenidos):
 
 
 st.set_page_config(page_title="Mi ranking de Spotify", page_icon="🎧", layout="wide")
-st.title("Mi ranking de Spotify")
+st.title(":green[Mi ranking de Spotify]")
 st.markdown("""Esta aplicación sirve para analizar tus gustos musicales según la información recopilada por Spotify""")
 
 with st.expander("¿Cómo pedir tus datos?"):
-    st.markdown("""Spotify guarda todos tus datos y puedes pedírselos en tres sencillos pasos:\\\n1. En el icono de tu perfil, pulsa **cuenta**. Esto te redirigirá a una página con todos los datos de tu cuenta de Spotify\\\n2. En el apartado de **Seguridad y Privacidad** selecciona **Privacidad de la cuenta**\\\n3. Desliza hasta el final y marca **Historial de reproducción ampliado** y pulsa **solicitar datos**\\\nEn unos días te llegarán al correo una carpeta comprimida con unos archivos en formato .json con todo tu historial, para poder ver tu análisis, simplemente cárgalos aquí""")
+    st.markdown("""Spotify guarda todos tus datos y puedes pedírselos en tres sencillos pasos:\n\n1. En el icono de tu perfil, pulsa **cuenta**. Esto te redirigirá a una página con todos los datos de tu cuenta de Spotify\n2. En el apartado de **Seguridad y Privacidad** selecciona **Privacidad de la cuenta**\n3. Desliza hasta el final y marca **Historial de reproducción ampliado** y pulsa **solicitar datos**\n\nEn unos días te llegarán al correo una carpeta comprimida con unos archivos en formato .json con todo tu historial, para poder ver tu análisis, simplemente cárgalos aquí""")
 
 with st.expander("Sube tus datos de Spotify"):
     subidos = st.file_uploader(label="Sube tus JSONs de Spotify", type="json", accept_multiple_files=True, label_visibility="hidden")
@@ -66,7 +66,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(["Spotify", "Enteras", 
 
 
 with tab1:
-    st.subheader("Ranking de Spotify")
+    st.subheader(":green[Ranking de Spotify]")
     with st.expander("Explicación"):
         st.markdown("""Este ranking simula el ranking creado por Spotify por su veinte aniversario para la playlist *Tu top de canciones más escuchadas*. Tras muchas pruebas se consiguió replicar este ranking contando las repeticiones de las canciones con más de 30 segundos de reproducción.¡Compruebalo tú mismo en tu playlist de Spotify!\\\n Ojo: Hay que tener en cuenta que el ranking de Spotify se hizo con los datos recopilados hasta mayo de 2026 y el tuyo depende de cuando pediste el histórico, por lo que pueden no coincidir""")
     top10 = rk_spotify.head(10)
@@ -75,15 +75,15 @@ with tab1:
             .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
             .encode(
                 x = alt.X("rep:Q", title="Escuchas"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                y=alt.Y("cancion:N", sort="-x", title=None), # La columna canción va en el eje vertical, la N significa nominal
+                y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
                 tooltip=["cancion","artista", "rep"],# Las cosas que salen cuando pongo el cursor encima
-            )
+            ).properties(height=400)
         )
     st.altair_chart(grafico)
     st.dataframe(rk_spotify, hide_index=True, column_config=traductor)
    
 with tab2:
-    st.subheader("Ranking canciones terminadas")
+    st.subheader(":green[Ranking canciones terminadas]")
     with st.expander("Explicación"):
         st.markdown("Este es un ranking de reproducciones, al igual que el de Spotify. Sin embargo, aquí solo cuenta como reproducción si has escuchado la canción hasta el final, sin saltártela. Así le damos verdadera importancia a las canciones que te gustan en su completitud, no solo el estribillo de TikTok.")
     
@@ -93,15 +93,15 @@ with tab2:
                 .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
                 .encode(
                     x = alt.X("rep_trackdone:Q", title="Escuchas"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                    y=alt.Y("cancion:N", sort="-x", title=None), # La columna canción va en el eje vertical, la N significa nominal
+                    y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
                     tooltip=["cancion","artista", "rep_trackdone"],# Las cosas que salen cuando pongo el cursor encima
-                )
+                ).properties(height=400) # Ajusta la altura del gráfico a una fija
             )
     st.altair_chart(grafico)
     st.dataframe(rk_trackdone, hide_index=True, column_config=traductor)
 
 with tab3:
-    st.subheader("Ranking de canciones elegidas")
+    st.subheader(":green[Ranking de canciones elegidas]")
     with st.expander("Explicación"):
         st.markdown("""Este es un ranking de reproducciones, al igual que los otros pero aquí solo cuentan las reproducciones de las canciones que has seleccionado tú. Es decir, solo cuenta si la hemos buscado y clicado. Con este ranking valoramos esas canciones que te vienen a la mente escuchar, no las que están en tu playlist favorita ni la que te ha puesto DJ Livi.\\\n Ojo: En la versión gratuita de Spotify las opciones para elegir canciones concretas son limitadas, sobre todo en el móvil, así que tal vez tengas pocos datos aquí""")
     top10 = rk_clickrow.head(10)
@@ -110,15 +110,15 @@ with tab3:
                 .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
                 .encode(
                     x = alt.X("rep_clickrow:Q", title="Escuchas"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                    y=alt.Y("cancion:N", sort="-x", title=None), # La columna canción va en el eje vertical, la N significa nominal
+                    y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
                     tooltip=["cancion","artista", "rep_clickrow"],# Las cosas que salen cuando pongo el cursor encima
-                )
+                ).properties(height=400)
             )
     st.altair_chart(grafico)
     st.dataframe(rk_clickrow, hide_index=True, column_config=traductor)
 
 with tab4:
-    st.subheader("Ranking canciones en bucle")
+    st.subheader(":green[Ranking canciones en bucle]")
     with st.expander("Explicación"):    
         st.markdown("Este ranking, nuevamente cuenta las reproducciones, pero esta vez solo cuentan las que han estado en bucle. Aquí contamos como reproducción solo si la anterior era la misma canción, da igual si has puesto literalmente el bucle o simplemente le has dado hacia atrás. Este ranking pretende valorar esas canciones que nos obsesionan y que con una escucha no es suficiente. ¿A ver qué canción es la que más has tenido en bucle?")
     top10 = rk_loop.head(10)
@@ -127,15 +127,15 @@ with tab4:
                 .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
                 .encode(
                         x = alt.X("rep_loop:Q", title="Escuchas"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                        y=alt.Y("cancion:N", sort="-x", title=None), # La columna canción va en el eje vertical, la N significa nominal
+                        y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
                         tooltip=["cancion","artista", "rep_loop"],# Las cosas que salen cuando pongo el cursor encima
-                    )
+                    ).properties(height=400)
                 )
     st.altair_chart(grafico)
     st.dataframe(rk_loop, hide_index=True, column_config=traductor)
 
 with tab5:
-    st.subheader("Ranking de más escuchas en un día")
+    st.subheader(":green[Ranking de más escuchas en un día]")
     with st.expander("Explicación"):
         st.markdown("""Este ranking es el motivo de que se hiciera este proyecto. El ranking de Spotify beneficia a las canciones que conoces desde hace más años, porque han tenido más tiempo para acumular escuchas. Para compensarlo, este ranking divide las escuchas totales de cada canción entre los días que han pasado desde que la escuchaste por primera vez hasta la fecha más reciente de tu historial. Así, 100 escuchas en un año pesan más que 200 en diez años, y las canciones que siguen contigo salen mejor paradas que las que dejaste de escuchar.\\\n El problema es que las canciones que acabas de descubrir llevan muy pocos días contigo, así que con pocas escuchas ya consiguen mucha puntuación, sin que eso signifique que sean tus favoritas. Por eso puedes elegir cuántas escuchas necesita una canción como mínimo para entrar en el ranking. Prueba a moverlo para ver cómo cambia tu ranking.
         """)
@@ -150,15 +150,15 @@ with tab5:
                 .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
                 .encode(
                     x = alt.X("densidad:Q", title="Escuchas al día desde que la escuchamos por primera vez"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                    y=alt.Y("cancion:N", sort="-x", title=None), # La columna canción va en el eje vertical, la N significa nominal
+                    y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
                     tooltip=["cancion","artista", "densidad"],# Las cosas que salen cuando pongo el cursor encima
-                )
+                ).properties(height=400)
             )
     st.altair_chart(grafico)
     st.dataframe(rk_densidad, hide_index=True, column_config=traductor)
 
 with tab6:
-    st.subheader("Ranking intervalo fijo")
+    st.subheader(":green[Ranking intervalo fijo]")
     with st.expander("Explicación"):
         st.markdown("""El anterior ranking mete una desigualdad y es que, las canciones que hemos conocido hace poco tiempo, tienen ventaja frente a las que conocemos desde hace más, por ello creamos este ranking donde vamos a calcular para todas las canciones, desde el momento que las conocimos hasta un tiempo limitado (ventana), cuanto las hemos escuchado. Este ranking valora lo enganchado que te tuvieron las canciones cuando las conociste.\\\n Ojo: Las canciones que conoces desde hace menos mesos de los puestos en el slider, no aparecerán en el ranking, ya que no contaríamos con todos los datos y no sería justo""")
     valor_inicial_ventana = min(12, int((sstats["fecha_max"].max()-sstats["fecha_inicio"].min()).days/30))
@@ -170,15 +170,15 @@ with tab6:
                 .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
                 .encode(
                     x = alt.X("rep_ventana:Q", title="Reproducciones en ese intervalo"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                    y=alt.Y("cancion:N", sort="-x", title=None), # La columna canción va en el eje vertical, la N significa nominal
+                    y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
                     tooltip=["cancion","artista", "rep_ventana"],# Las cosas que salen cuando pongo el cursor encima
-                )
+                ).properties(height=400)
             )
     st.altair_chart(grafico)
     st.dataframe(rk_intervalo, hide_index=True, column_config=traductor)
 
 with tab7:
-    st.subheader("Ranking Definitivo")
+    st.subheader(":green[Ranking Definitivo]")
     with st.expander("Explicación"):
         st.markdown("""Este ranking fusiona todos los anteriores: Calcula los porcentajes de las reproducciones totales que han sido clicadas, en bucle o reproducidas hasta el final y las reproducciones que se han tenido en cada canción para una ventana temporal. De cada canción se tiene en cuenta el percentil de su ranking, pero como cada persona es un mundo, este ranking te permite decidir a cuál de los rankings anteriores le das más peso, además de editar los dos parámetros que hemos visto en el resto de rankings:\\\n La ventana temporal que estamos observando de una canción para el ranking de intensidad y el número de reproducciones mínimas que tienen que tener las canciones para aparecer en el ranking """)
     min_rep_definitivo = st.slider("Nº mínimo de reproducciones para entrar",1, max_rep, max_rep//2, key="min_rep_definitivo")
@@ -202,9 +202,9 @@ with tab7:
                 .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
                 .encode(
                     x = alt.X("nota:Q", title="Nota"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                    y=alt.Y("cancion:N", sort="-x", title=None), # La columna canción va en el eje vertical, la N significa nominal
+                    y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
                     tooltip=["cancion","artista", "nota"],# Las cosas que salen cuando pongo el cursor encima
-                )
+                ).properties(height=400)
             )
     st.altair_chart(grafico)
     st.dataframe(rk_final[["Puesto","cancion","artista","rep","rep_ventana", "pct_trackdone", "pct_clickrow", "pct_loop", "nota" ]], hide_index=True, column_config=traductor)
@@ -212,7 +212,7 @@ with tab7:
 
 
 with tab8:
-    st.subheader("Trayectoria de una canción")
+    st.subheader(":green[Trayectoria de una canción]")
     with st.expander("Explicación"):
         st.markdown("Este gráfico muestra la historia de una canción que busques, en una línea temporal frente a las reproducciones que ha tenido para cada intervalo")
     opciones = sstats[sstats["rep"]>=20]
