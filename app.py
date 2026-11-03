@@ -18,6 +18,8 @@ st.markdown("""Esta aplicación sirve para analizar tus gustos musicales según 
 with st.expander("¿Cómo pedir tus datos?"):
     st.markdown("""Spotify guarda todos tus datos y puedes pedírselos en tres sencillos pasos:\n\n1. En el icono de tu perfil, pulsa **cuenta**. Esto te redirigirá a una página con todos los datos de tu cuenta de Spotify\n2. En el apartado de **Seguridad y Privacidad** selecciona **Privacidad de la cuenta**\n3. Desliza hasta el final y marca **Historial de reproducción ampliado** y pulsa **solicitar datos**\n\nEn unos días te llegarán al correo una carpeta comprimida con unos archivos en formato .json con todo tu historial, para poder ver tu análisis, simplemente cárgalos aquí""")
 
+with st.expander("Protección de datos"):
+    st.markdown("""**Tus datos y tu privacidad**\n\nSé que tu historial de Spotify dice mucho de ti, así que te cuento sin rodeos qué hace esta app con él. De cada escucha solo uso seis datos: la fecha, cuánto la escuchaste, la canción, el artista y cómo empezó y terminó; todo lo demás que trae tu archivo, como la dirección IP o el país desde el que te conectaste, se descarta nada más leerlo. Tu archivo se queda únicamente en la memoria temporal de la app y no se escribe en ningún archivo ni base de datos: desaparece cuando lo quitas, subes otro o cierras la pestaña. Para que los sliders respondan al momento, el resultado de los cálculos se conserva en memoria como máximo dos horas. La app está alojada en Streamlit Community Cloud (de la empresa Snowflake), así que no puedo garantizarte lo que haga esa plataforma por debajo; yo he leído [su política de privacidad](https://streamlit.io/privacy) y [sus términos de uso](https://streamlit.io/sharing/terms-of-use) y no he encontrado nada que indique que usen los archivos que suben los usuarios, aunque tampoco prometen lo contrario. Si prefieres no subir nada, puedes ejecutar la app en tu propio ordenador: el código es público [aquí](https://github.com/paumengil/spotify_ranking_app) y así tus datos no salen de tu máquina.""")
 with st.expander("Sube tus datos de Spotify"):
     subidos = st.file_uploader(label="Sube tus JSONs de Spotify", type="json", accept_multiple_files=True, label_visibility="hidden")
 if not subidos:
@@ -25,6 +27,7 @@ if not subidos:
     st.stop()
 
 contenidos = [archivo.getvalue() for archivo in subidos]
+
 
 # Creamos un traductos para las columnas de las tablas tengan un nombre concreto y no el de la variable
 traductor = {
