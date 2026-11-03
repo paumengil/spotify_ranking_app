@@ -10,3 +10,6 @@ __pycache__/
 
 # Datos personales de Spotify
 Spotify Extended Streaming History
+
+# Notebook de estudio con mis datos personales
+*.ipynb
