@@ -1,14 +1,7 @@
 import streamlit as st
 import ranking
 import altair as alt
-
-@st.cache_data(ttl=7200, max_entries=5) #Usamos este decorador que solo afecta a la función que tiene debajo para que a pesar de movamos el slider no haya que cargar los mismos datos luego
-def preparar_todo(contenidos): 
-    df = ranking.cargar_datos(contenidos)
-    songs = ranking.preparar_canciones(df)
-    sstats = ranking.calcular_sstats(songs)
-    
-    return songs, sstats
+import comun
 
 
 st.set_page_config(page_title="Mi ranking de Spotify", page_icon="🎧", layout="wide")
@@ -29,27 +22,9 @@ if not subidos:
 contenidos = [archivo.getvalue() for archivo in subidos]
 
 
-# Creamos un traductos para las columnas de las tablas tengan un nombre concreto y no el de la variable
-traductor = {
-    "cancion": "Canción",
-    "artista": "Artista",
-    "fecha_inicio": st.column_config.DateColumn("Primera escucha", format="DD-MM-YYYY"),
-    "fecha_max":st.column_config.DateColumn("Última escucha", format="DD-MM-YYYY"),
-    "rep": "Nº Escuchas",
-    "rep_clickrow": "Nº Escuchas",
-    "rep_trackdone":"Nº Escuchas",
-    "rep_loop":"Nº Escuchas",
-    "rep_ventana": "Nº Escuchas en ventana",
-    "densidad": "Media de escuchas por día",
-    "delta_dias": None,
-    "pct_trackdone": st.column_config.NumberColumn(" % de repeticiones acabadas", format="percent"),
-    "pct_clickrow": st.column_config.NumberColumn(" % de repeticiones seleccionadas", format="percent"),
-    "pct_loop": st.column_config.NumberColumn(" % de repeticiones en bucle", format="percent"),
-    "nota": st.column_config.NumberColumn("Nota", format="%.2f")
-}
 
 #Calculamos las tablas
-songs, sstats = preparar_todo(contenidos)
+songs, sstats = comun.preparar_todo(contenidos)
 
 # Calculamos los rankings que usaremos más adelante, algunos los calculamos abajo porque requieren de un parámetro que está en el slider
 rk_spotify = ranking.calcular_ranking_reproducidas(songs)
@@ -63,10 +38,10 @@ col2.metric("canciones", len(sstats["cancion"]), border=True)
 col3.metric("Inicio",str(sstats["fecha_inicio"].min().date()), border=True) #convertimos la fecha a string porque no lee fechas
 col4.metric("Fin",str(sstats["fecha_max"].max().date()),border=True) #convertimos la fecha a string porque no lee fechas
 with st.expander("Ver todos mis datos"):
-    st.dataframe(sstats, hide_index=True, column_config=traductor)
+    st.dataframe(sstats, hide_index=True, column_config=comun.traductor)
 
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(["Spotify", "Enteras", "Seleccionadas","En bucle", "Al día", "En un tiempo", "Definitivo", "Mi historia con una canción" ])
-
+s
 
 with tab1:
     st.subheader(":green[Ranking de Spotify]")
@@ -83,7 +58,7 @@ with tab1:
             ).properties(height=400)
         )
     st.altair_chart(grafico)
-    st.dataframe(rk_spotify, hide_index=True, column_config=traductor)
+    st.dataframe(rk_spotify, hide_index=True, column_config=comun.traductor)
    
 with tab2:
     st.subheader(":green[Ranking canciones terminadas]")
@@ -101,7 +76,7 @@ with tab2:
                 ).properties(height=400) # Ajusta la altura del gráfico a una fija
             )
     st.altair_chart(grafico)
-    st.dataframe(rk_trackdone, hide_index=True, column_config=traductor)
+    st.dataframe(rk_trackdone, hide_index=True, column_config=comun.traductor)
 
 with tab3:
     st.subheader(":green[Ranking de canciones elegidas]")
@@ -118,7 +93,7 @@ with tab3:
                 ).properties(height=400)
             )
     st.altair_chart(grafico)
-    st.dataframe(rk_clickrow, hide_index=True, column_config=traductor)
+    st.dataframe(rk_clickrow, hide_index=True, column_config=comun.traductor)
 
 with tab4:
     st.subheader(":green[Ranking canciones en bucle]")
@@ -135,7 +110,7 @@ with tab4:
                     ).properties(height=400)
                 )
     st.altair_chart(grafico)
-    st.dataframe(rk_loop, hide_index=True, column_config=traductor)
+    st.dataframe(rk_loop, hide_index=True, column_config=comun.traductor)
 
 with tab5:
     st.subheader(":green[Ranking de más escuchas en un día]")
@@ -158,7 +133,7 @@ with tab5:
                 ).properties(height=400)
             )
     st.altair_chart(grafico)
-    st.dataframe(rk_densidad, hide_index=True, column_config=traductor)
+    st.dataframe(rk_densidad, hide_index=True, column_config=comun.traductor)
 
 with tab6:
     st.subheader(":green[Ranking intervalo fijo]")
@@ -178,7 +153,7 @@ with tab6:
                 ).properties(height=400)
             )
     st.altair_chart(grafico)
-    st.dataframe(rk_intervalo, hide_index=True, column_config=traductor)
+    st.dataframe(rk_intervalo, hide_index=True, column_config=comun.traductor)
 
 with tab7:
     st.subheader(":green[Ranking Definitivo]")
@@ -210,7 +185,7 @@ with tab7:
                 ).properties(height=400)
             )
     st.altair_chart(grafico)
-    st.dataframe(rk_final[["Puesto","cancion","artista","rep","rep_ventana", "pct_trackdone", "pct_clickrow", "pct_loop", "nota" ]], hide_index=True, column_config=traductor)
+    st.dataframe(rk_final[["Puesto","cancion","artista","rep","rep_ventana", "pct_trackdone", "pct_clickrow", "pct_loop", "nota" ]], hide_index=True, column_config=comun.traductor)
             
 
 
