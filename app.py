@@ -3,8 +3,14 @@ import ranking
 import altair as alt
 import comun
 
-
+# Configuración de la página
 st.set_page_config(page_title="Mi ranking de Spotify", page_icon="🎧", layout="wide")
+
+# Navegación entre páginas
+pg = st.navigation([
+    st.Page("pages/spotify.py", title="Spotify", icon="🎧"),
+])
+
 st.title(":green[Mi ranking de Spotify]")
 st.markdown("""Esta aplicación sirve para analizar tus gustos musicales según la información recopilada por Spotify""")
 
@@ -13,8 +19,10 @@ with st.expander("¿Cómo pedir tus datos?"):
 
 with st.expander("Protección de datos"):
     st.markdown("""**Tus datos y tu privacidad**\n\nSé que tu historial de Spotify dice mucho de ti, así que te cuento sin rodeos qué hace esta app con él. De cada escucha solo uso seis datos: la fecha, cuánto la escuchaste, la canción, el artista y cómo empezó y terminó; todo lo demás que trae tu archivo, como la dirección IP o el país desde el que te conectaste, se descarta nada más leerlo. Tu archivo se queda únicamente en la memoria temporal de la app y no se escribe en ningún archivo ni base de datos: desaparece cuando lo quitas, subes otro o cierras la pestaña. Para que los sliders respondan al momento, el resultado de los cálculos se conserva en memoria como máximo dos horas. La app está alojada en Streamlit Community Cloud (de la empresa Snowflake), así que no puedo garantizarte lo que haga esa plataforma por debajo; yo he leído [su política de privacidad](https://streamlit.io/privacy) y [sus términos de uso](https://streamlit.io/sharing/terms-of-use) y no he encontrado nada que indique que usen los archivos que suben los usuarios, aunque tampoco prometen lo contrario. Si prefieres no subir nada, puedes ejecutar la app en tu propio ordenador: el código es público [aquí](https://github.com/paumengil/spotify_ranking_app) y así tus datos no salen de tu máquina.""")
+
+# Carga de datos json
 with st.expander("Sube tus datos de Spotify"):
-    subidos = st.file_uploader(label="Sube tus JSONs de Spotify", type="json", accept_multiple_files=True, label_visibility="hidden")
+    subidos = st.file_uploader(label="Sube tus JSONs de Spotify", type="json", accept_multiple_files=True, label_visibility="hidden", key="subidos")
 if not subidos:
     st.info("Sube tus archivos para empezar")
     st.stop()
@@ -27,7 +35,7 @@ contenidos = [archivo.getvalue() for archivo in subidos]
 songs, sstats = comun.preparar_todo(contenidos)
 
 # Calculamos los rankings que usaremos más adelante, algunos los calculamos abajo porque requieren de un parámetro que está en el slider
-rk_spotify = ranking.calcular_ranking_reproducidas(songs)
+
 rk_trackdone = ranking.calcular_ranking_trackdone(songs)
 rk_clickrow = ranking.calcular_ranking_clickrow(songs)
 rk_loop = ranking.calcular_ranking_loop(songs)
@@ -43,23 +51,6 @@ with st.expander("Ver todos mis datos"):
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(["Spotify", "Enteras", "Seleccionadas","En bucle", "Al día", "En un tiempo", "Definitivo", "Mi historia con una canción" ])
 s
 
-with tab1:
-    st.subheader(":green[Ranking de Spotify]")
-    with st.expander("Explicación"):
-        st.markdown("""Este ranking simula el ranking creado por Spotify por su veinte aniversario para la playlist *Tu top de canciones más escuchadas*. Tras muchas pruebas se consiguió replicar este ranking contando las repeticiones de las canciones con más de 30 segundos de reproducción.¡Compruebalo tú mismo en tu playlist de Spotify!\\\n Ojo: Hay que tener en cuenta que el ranking de Spotify se hizo con los datos recopilados hasta mayo de 2026 y el tuyo depende de cuando pediste el histórico, por lo que pueden no coincidir""")
-    top10 = rk_spotify.head(10)
-    grafico = (
-            alt.Chart(top10)
-            .mark_bar(cornerRadiusEnd=4) # con mark_bar estamos creando un gráfico de barras
-            .encode(
-                x = alt.X("rep:Q", title="Escuchas"), # la columna rep va en el eje horizontal. Q significa cuantitativa
-                y=alt.Y("cancion:N", sort="-x", title=None,axis=alt.Axis(labelColor="#191414", labelFontWeight="bold", labelFontSize=15, labelLimit=600)), # La columna canción va en el eje vertical, la N significa nominal
-                tooltip=["cancion","artista", "rep"],# Las cosas que salen cuando pongo el cursor encima
-            ).properties(height=400)
-        )
-    st.altair_chart(grafico)
-    st.dataframe(rk_spotify, hide_index=True, column_config=comun.traductor)
-   
 with tab2:
     st.subheader(":green[Ranking canciones terminadas]")
     with st.expander("Explicación"):

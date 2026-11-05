@@ -29,3 +29,4 @@ traductor = {
     "pct_loop": st.column_config.NumberColumn(" % de repeticiones en bucle", format="percent"),
     "nota": st.column_config.NumberColumn("Nota", format="%.2f")
 }
+
